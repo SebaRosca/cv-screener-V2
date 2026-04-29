@@ -1,0 +1,1387 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CV Screener — Platforma HR cu AI</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #F7F5F0;
+    --surface: #FFFFFF;
+    --surface2: #F0EDE8;
+    --border: #E2DDD8;
+    --border2: #C8C3BC;
+    --text: #1A1714;
+    --text2: #5C5751;
+    --text3: #9B958F;
+    --accent: #2E4A3E;
+    --accent2: #4A7A68;
+    --accent-light: #E8F0EC;
+    --warn: #8B4513;
+    --warn-light: #FDF0E8;
+    --danger: #8B1A1A;
+    --danger-light: #FDF0F0;
+    --success: #1A5C3A;
+    --success-light: #E8F5EE;
+    --score-high: #1A5C3A;
+    --score-mid: #7A5C1A;
+    --score-low: #8B1A1A;
+    --radius: 10px;
+    --radius-lg: 16px;
+    --shadow: 0 1px 4px rgba(0,0,0,0.08);
+    --shadow-lg: 0 4px 24px rgba(0,0,0,0.1);
+    --font-serif: 'DM Serif Display', Georgia, serif;
+    --font-sans: 'DM Sans', system-ui, sans-serif;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  /* ─── HEADER ─── */
+  header {
+    background: var(--accent);
+    color: white;
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+  }
+  .logo {
+    font-family: var(--font-serif);
+    font-size: 1.4rem;
+    letter-spacing: -0.3px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .logo-badge {
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 6px;
+    padding: 2px 8px;
+    font-family: var(--font-sans);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .api-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: rgba(255,255,255,0.75);
+  }
+  .dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: #aaa;
+  }
+  .dot.ok { background: #5EE899; }
+  .dot.err { background: #FF7B7B; }
+  .btn-header {
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.25);
+    color: white;
+    border-radius: 7px;
+    padding: 6px 14px;
+    font-size: 13px;
+    font-family: var(--font-sans);
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .btn-header:hover { background: rgba(255,255,255,0.22); }
+
+  /* ─── LAYOUT ─── */
+  .container { max-width: 1300px; margin: 0 auto; padding: 0 1.5rem; }
+
+  .main-layout {
+    display: grid;
+    grid-template-columns: 340px 1fr;
+    gap: 1.5rem;
+    padding: 1.5rem 0 3rem;
+    align-items: start;
+  }
+
+  /* ─── SIDEBAR ─── */
+  .sidebar { display: flex; flex-direction: column; gap: 1rem; position: sticky; top: 80px; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem;
+    box-shadow: var(--shadow);
+  }
+  .card-title {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--text3);
+    margin-bottom: 1rem;
+  }
+
+  textarea, input[type=text], input[type=password], select {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px 12px;
+    font-family: var(--font-sans);
+    font-size: 14px;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    resize: vertical;
+  }
+  textarea:focus, input:focus, select:focus {
+    border-color: var(--accent2);
+    box-shadow: 0 0 0 3px rgba(74, 122, 104, 0.12);
+  }
+
+  .field-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text2);
+    margin-bottom: 5px;
+    display: block;
+  }
+  .field-group { margin-bottom: 1rem; }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 9px 18px;
+    border-radius: var(--radius);
+    border: none;
+    font-family: var(--font-sans);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: white;
+    width: 100%;
+  }
+  .btn-primary:hover { background: #243D33; }
+  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-secondary {
+    background: var(--surface2);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .btn-secondary:hover { background: var(--border); }
+  .btn-danger {
+    background: var(--danger-light);
+    color: var(--danger);
+    border: 1px solid #E8C0C0;
+    font-size: 12px;
+    padding: 5px 10px;
+  }
+  .btn-danger:hover { background: #F7DADA; }
+  .btn-sm {
+    font-size: 12px;
+    padding: 5px 12px;
+  }
+
+  /* ─── TABS ─── */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    background: var(--surface2);
+    border-radius: var(--radius);
+    padding: 4px;
+    margin-bottom: 1.5rem;
+  }
+  .tab {
+    flex: 1;
+    padding: 8px 12px;
+    border: none;
+    background: none;
+    border-radius: 7px;
+    font-family: var(--font-sans);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text2);
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .tab.active {
+    background: var(--surface);
+    color: var(--accent);
+    box-shadow: var(--shadow);
+  }
+  .tab:hover:not(.active) { color: var(--text); }
+
+  /* ─── MAIN CONTENT ─── */
+  .main-content { display: flex; flex-direction: column; gap: 1.5rem; }
+
+  /* ─── CANDIDATE CARDS ─── */
+  .candidates-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+  }
+  .candidates-title {
+    font-family: var(--font-serif);
+    font-size: 1.4rem;
+    color: var(--text);
+  }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 10px;
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+  .badge-neutral { background: var(--surface2); color: var(--text2); }
+  .badge-success { background: var(--success-light); color: var(--success); }
+  .badge-warn { background: var(--warn-light); color: var(--warn); }
+  .badge-danger { background: var(--danger-light); color: var(--danger); }
+
+  .candidates-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .candidate-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    transition: box-shadow 0.2s, transform 0.2s;
+  }
+  .candidate-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-1px); }
+  .candidate-card.selected { border-color: var(--accent2); box-shadow: 0 0 0 2px rgba(74,122,104,0.2); }
+
+  .card-header-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.25rem 1.25rem 0;
+  }
+  .candidate-meta { flex: 1; }
+  .candidate-name {
+    font-family: var(--font-serif);
+    font-size: 1.15rem;
+    color: var(--text);
+    margin-bottom: 2px;
+  }
+  .candidate-role {
+    font-size: 13px;
+    color: var(--text2);
+  }
+
+  .score-ring {
+    width: 58px; height: 58px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    flex-shrink: 0;
+    border: 3px solid var(--border2);
+    position: relative;
+  }
+  .score-ring .score-num {
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 1;
+  }
+  .score-ring .score-label {
+    font-size: 10px;
+    color: var(--text3);
+  }
+  .score-ring.high { border-color: #5EE899; }
+  .score-ring.mid { border-color: #F5C842; }
+  .score-ring.low { border-color: #FF7B7B; }
+  .score-ring.high .score-num { color: var(--score-high); }
+  .score-ring.mid .score-num { color: var(--score-mid); }
+  .score-ring.low .score-num { color: var(--score-low); }
+
+  .analysis-body { padding: 1rem 1.25rem 1.25rem; }
+
+  .analysis-section { margin-bottom: 1rem; }
+  .analysis-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--text3);
+    margin-bottom: 6px;
+  }
+  .analysis-text {
+    font-size: 13.5px;
+    color: var(--text2);
+    line-height: 1.55;
+  }
+
+  .criteria-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 1rem;
+  }
+  .criterion-item {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .criterion-name { font-size: 11px; color: var(--text3); font-weight: 500; }
+  .criterion-bar-wrap { height: 4px; background: var(--border); border-radius: 4px; overflow: hidden; }
+  .criterion-bar { height: 100%; border-radius: 4px; transition: width 0.6s ease; }
+  .criterion-val { font-size: 12px; font-weight: 600; color: var(--text); }
+
+  .tags-row { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tag {
+    background: var(--accent-light);
+    color: var(--accent);
+    border-radius: 6px;
+    padding: 3px 10px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+  .tag.gap { background: var(--warn-light); color: var(--warn); }
+  .tag.risk { background: var(--danger-light); color: var(--danger); }
+
+  .card-actions {
+    padding: 0 1.25rem 1.25rem;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    border-top: 1px solid var(--border);
+    padding-top: 1rem;
+  }
+
+  /* ─── COMPARE VIEW ─── */
+  .compare-table { width: 100%; border-collapse: collapse; }
+  .compare-table th {
+    background: var(--accent);
+    color: white;
+    padding: 10px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    text-align: left;
+  }
+  .compare-table th:first-child { border-radius: var(--radius) 0 0 0; }
+  .compare-table th:last-child { border-radius: 0 var(--radius) 0 0; }
+  .compare-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    font-size: 13.5px;
+    vertical-align: top;
+  }
+  .compare-table tr:nth-child(even) td { background: var(--bg); }
+  .compare-table .row-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text3);
+    white-space: nowrap;
+  }
+
+  /* ─── BIAS PANEL ─── */
+  .bias-alert {
+    background: var(--warn-light);
+    border: 1px solid #E8C8A0;
+    border-radius: var(--radius);
+    padding: 1rem 1.25rem;
+    margin-bottom: 1rem;
+  }
+  .bias-alert-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--warn);
+    margin-bottom: 4px;
+  }
+  .bias-alert-text {
+    font-size: 13px;
+    color: var(--text2);
+    line-height: 1.5;
+  }
+
+  /* ─── EMPTY STATE ─── */
+  .empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--text3);
+  }
+  .empty-icon { font-size: 3rem; margin-bottom: 1rem; opacity: 0.4; }
+  .empty-title { font-family: var(--font-serif); font-size: 1.3rem; color: var(--text2); margin-bottom: 0.5rem; }
+  .empty-desc { font-size: 14px; max-width: 320px; margin: 0 auto; }
+
+  /* ─── LOADING ─── */
+  .loading-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 1rem;
+    color: var(--text2);
+    font-size: 14px;
+  }
+  .spinner {
+    width: 20px; height: 20px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ─── MODAL ─── */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+    padding: 1rem;
+    backdrop-filter: blur(3px);
+  }
+  .modal {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+    width: 100%;
+    max-width: 500px;
+    box-shadow: var(--shadow-lg);
+  }
+  .modal-title {
+    font-family: var(--font-serif);
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+  .modal-desc { font-size: 14px; color: var(--text2); margin-bottom: 1.5rem; line-height: 1.6; }
+  .modal-actions { display: flex; gap: 10px; margin-top: 1.5rem; }
+
+  /* ─── STATS BAR ─── */
+  .stats-bar {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem;
+    box-shadow: var(--shadow);
+  }
+  .stat-item { text-align: center; }
+  .stat-num { font-family: var(--font-serif); font-size: 2rem; color: var(--text); line-height: 1; }
+  .stat-label { font-size: 12px; color: var(--text3); margin-top: 4px; }
+
+  /* ─── NOTICE ─── */
+  .notice {
+    background: var(--accent-light);
+    border: 1px solid rgba(46,74,62,0.2);
+    border-radius: var(--radius);
+    padding: 10px 14px;
+    font-size: 13px;
+    color: var(--accent);
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+  }
+
+  /* ─── SECTION PANEL ─── */
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+  .panel-header {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .panel-title {
+    font-weight: 500;
+    font-size: 14px;
+    color: var(--text);
+  }
+  .panel-body { padding: 1.25rem; }
+
+  /* ─── TOOLTIP ─── */
+  [title] { cursor: help; }
+
+  /* ─── SCROLL ─── */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+  /* ─── HIDDEN ─── */
+  .hidden { display: none !important; }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 900px) {
+    .main-layout { grid-template-columns: 1fr; }
+    .sidebar { position: static; }
+    .stats-bar { grid-template-columns: repeat(2,1fr); }
+    .criteria-grid { grid-template-columns: repeat(2,1fr); }
+  }
+  @media (max-width: 600px) {
+    header { padding: 0 1rem; }
+    .container { padding: 0 1rem; }
+    .criteria-grid { grid-template-columns: 1fr; }
+    .stats-bar { grid-template-columns: repeat(2,1fr); }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── HEADER ── -->
+<header>
+  <div class="logo">
+    <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="28" height="28" rx="7" fill="rgba(255,255,255,0.15)"/>
+      <path d="M8 20l4-8 4 8M10.5 16.5h3" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+      <circle cx="20" cy="10" r="4" fill="rgba(255,255,255,0.3)" stroke="white" stroke-width="1.5"/>
+      <path d="M20 8.5v3M18.5 10h3" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    </svg>
+    CV Screener
+    <span class="logo-badge">AI</span>
+  </div>
+  <div class="header-right">
+    <div class="api-status">
+      <div class="dot" id="apiDot"></div>
+      <span id="apiStatusText">Neconfigurat</span>
+    </div>
+    <button class="btn-header" onclick="showApiModal()">⚙ Configurare API</button>
+  </div>
+</header>
+
+<!-- ── API KEY MODAL ── -->
+<div class="modal-overlay" id="apiModal">
+  <div class="modal">
+    <div class="modal-title">Configurare Cheie API</div>
+    <p class="modal-desc">
+      Această aplicație folosește inteligența artificială Anthropic (Claude) pentru analiza CV-urilor.
+      Ai nevoie de o cheie API de la <strong>console.anthropic.com</strong>.<br><br>
+      Cheia ta este stocată <strong>doar local în browserul tău</strong> și nu este trimisă nicăieri altundeva.
+    </p>
+    <div class="field-group">
+      <label class="field-label">Cheie API Anthropic (sk-ant-...)</label>
+      <input type="password" id="apiKeyInput" placeholder="sk-ant-api03-..." autocomplete="off">
+    </div>
+    <div class="notice" style="margin-bottom:0.5rem;">
+      <span>ℹ</span>
+      <span>Nu ai cheie API? Înregistrează-te gratuit pe <a href="https://console.anthropic.com" target="_blank" style="color:inherit;font-weight:600;">console.anthropic.com</a> → API Keys → Create Key</span>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="saveApiKey()" style="flex:1;">Salvează și continuă</button>
+      <button class="btn btn-secondary" onclick="dismissModal()" id="modalCancelBtn" style="display:none;">Anulează</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── MAIN ── -->
+<div class="container">
+  <div class="main-layout">
+
+    <!-- ── SIDEBAR ── -->
+    <aside class="sidebar">
+
+      <!-- Job Description -->
+      <div class="card">
+        <div class="card-title">📋 Descriere post (Job Description)</div>
+        <div class="field-group">
+          <label class="field-label">Titlu poziție</label>
+          <input type="text" id="jobTitle" placeholder="ex: Senior Developer React">
+        </div>
+        <div class="field-group">
+          <label class="field-label">Cerințe și responsabilități</label>
+          <textarea id="jobDesc" rows="7" placeholder="Copiați sau scrieți descrierea postului aici. Ex:&#10;- 3+ ani experiență React&#10;- Cunoștințe Node.js&#10;- Comunicare bună în echipă&#10;..."></textarea>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Criterii prioritare (câte unul pe rând)</label>
+          <textarea id="priorityCriteria" rows="3" placeholder="React&#10;TypeScript&#10;Management echipă"></textarea>
+        </div>
+      </div>
+
+      <!-- Add CV -->
+      <div class="card">
+        <div class="card-title">➕ Adaugă CV candidat</div>
+        <div class="field-group">
+          <label class="field-label">Nume candidat</label>
+          <input type="text" id="candidateName" placeholder="ex: Andrei Ionescu">
+        </div>
+        <div class="field-group">
+          <label class="field-label">Conținut CV (copy-paste text)</label>
+          <textarea id="cvText" rows="8" placeholder="Lipiți textul complet al CV-ului candidatului...&#10;&#10;Includeți: experiență, studii, skills, proiecte, etc."></textarea>
+        </div>
+        <button class="btn btn-primary" onclick="analyzeCV()" id="analyzeBtn">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.5"/><path d="M5 8l2 2 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Analizează CV
+        </button>
+        <div class="loading-row hidden" id="loadingRow">
+          <div class="spinner"></div>
+          <span id="loadingText">Se analizează CV-ul...</span>
+        </div>
+      </div>
+
+      <!-- Options -->
+      <div class="card">
+        <div class="card-title">⚙ Opțiuni analiză</div>
+        <div class="field-group">
+          <label class="field-label">Pragul minim de potrivire (%)</label>
+          <input type="text" id="minScore" value="60" placeholder="60">
+        </div>
+        <div class="field-group">
+          <label class="field-label">Limbă analiză</label>
+          <select id="analysisLang">
+            <option value="română">Română</option>
+            <option value="engleză">Engleză</option>
+          </select>
+        </div>
+      </div>
+
+    </aside>
+
+    <!-- ── MAIN CONTENT ── -->
+    <main class="main-content" id="mainContent">
+
+      <!-- Stats Bar -->
+      <div class="stats-bar" id="statsBar">
+        <div class="stat-item">
+          <div class="stat-num" id="statTotal">0</div>
+          <div class="stat-label">CV-uri analizate</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num" id="statHigh" style="color:var(--success)">0</div>
+          <div class="stat-label">Potrivire ridicată (≥75%)</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num" id="statMid" style="color:var(--score-mid)">0</div>
+          <div class="stat-label">Potrivire medie (50-74%)</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num" id="statLow" style="color:var(--danger)">0</div>
+          <div class="stat-label">Potrivire scăzută (&lt;50%)</div>
+        </div>
+      </div>
+
+      <!-- View Tabs -->
+      <div class="tabs" id="viewTabs">
+        <button class="tab active" onclick="switchView('list', this)">📋 Listă candidați</button>
+        <button class="tab" onclick="switchView('compare', this)">↔ Comparație</button>
+        <button class="tab" onclick="switchView('bias', this)">⚠ Analiză bias</button>
+        <button class="tab" onclick="switchView('ranking', this)">🏆 Clasament final</button>
+      </div>
+
+      <!-- VIEW: LIST -->
+      <div id="viewList">
+        <div class="candidates-header">
+          <div class="candidates-title" id="listTitle">Candidați</div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <select id="sortSelect" onchange="renderCandidates()" style="width:auto;font-size:13px;padding:6px 10px;">
+              <option value="score">Sortare: Scor ↓</option>
+              <option value="name">Sortare: Nume A-Z</option>
+              <option value="recent">Sortare: Recente</option>
+            </select>
+            <button class="btn btn-secondary btn-sm" onclick="exportCSV()">⬇ Export CSV</button>
+            <button class="btn btn-secondary btn-sm" onclick="clearAll()">🗑 Șterge tot</button>
+          </div>
+        </div>
+        <div id="candidatesGrid" class="candidates-grid">
+          <!-- empty state -->
+          <div class="empty-state" id="emptyState">
+            <div class="empty-icon">📄</div>
+            <div class="empty-title">Niciun CV analizat încă</div>
+            <div class="empty-desc">Completați descrierea postului și adăugați primul CV folosind formularul din stânga.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW: COMPARE -->
+      <div id="viewCompare" class="hidden">
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">Comparație candidați (selectați 2-4)</span>
+            <button class="btn btn-secondary btn-sm" onclick="buildCompare()">↻ Actualizează</button>
+          </div>
+          <div class="panel-body" id="compareContent">
+            <div class="empty-state">
+              <div class="empty-icon">↔</div>
+              <div class="empty-title">Selectați candidații de comparat</div>
+              <div class="empty-desc">Bifați candidații din lista principală, apoi veniți la această secțiune.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW: BIAS -->
+      <div id="viewBias" class="hidden">
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">Analiză bias inconștient & consistență evaluare</span>
+          </div>
+          <div class="panel-body" id="biasContent">
+            <div class="empty-state">
+              <div class="empty-icon">⚖</div>
+              <div class="empty-title">Analizați mai mulți candidați</div>
+              <div class="empty-desc">Adăugați minim 2 CV-uri pentru a detecta potențiale inconsistențe sau bias în evaluare.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW: RANKING -->
+      <div id="viewRanking" class="hidden">
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">Clasament final & recomandare recrutare</span>
+            <button class="btn btn-secondary btn-sm" onclick="exportCSV()">⬇ Export CSV</button>
+          </div>
+          <div class="panel-body" id="rankingContent">
+            <div class="empty-state">
+              <div class="empty-icon">🏆</div>
+              <div class="empty-title">Clasamentul va apărea după analizarea CV-urilor</div>
+              <div class="empty-desc">Adăugați cel puțin un CV pentru a genera clasamentul.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script>
+// ─── STATE ───────────────────────────────────────────────────────
+let candidates = JSON.parse(localStorage.getItem('cvscreener_candidates') || '[]');
+let selectedIds = new Set();
+let currentView = 'list';
+let apiKey = localStorage.getItem('cvscreener_apikey') || '';
+
+// ─── INIT ─────────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  if (!apiKey) {
+    showApiModal(true);
+  } else {
+    updateApiStatus(true);
+  }
+  renderCandidates();
+  updateStats();
+});
+
+// ─── API KEY ──────────────────────────────────────────────────────
+function showApiModal(required = false) {
+  document.getElementById('apiModal').classList.remove('hidden');
+  document.getElementById('apiKeyInput').value = apiKey || '';
+  const cancelBtn = document.getElementById('modalCancelBtn');
+  cancelBtn.style.display = required ? 'none' : '';
+}
+
+function dismissModal() {
+  document.getElementById('apiModal').classList.add('hidden');
+}
+
+function saveApiKey() {
+  const key = document.getElementById('apiKeyInput').value.trim();
+  if (!key.startsWith('sk-ant')) {
+    alert('Cheia API trebuie să înceapă cu "sk-ant". Verificați dacă ați copiat corect de pe console.anthropic.com');
+    return;
+  }
+  apiKey = key;
+  localStorage.setItem('cvscreener_apikey', key);
+  updateApiStatus(true);
+  dismissModal();
+}
+
+function updateApiStatus(ok) {
+  const dot = document.getElementById('apiDot');
+  const txt = document.getElementById('apiStatusText');
+  if (ok) {
+    dot.className = 'dot ok';
+    txt.textContent = 'API conectat';
+  } else {
+    dot.className = 'dot err';
+    txt.textContent = 'Neconfigurat';
+  }
+}
+
+// ─── ANALYZE CV ──────────────────────────────────────────────────
+async function analyzeCV() {
+  if (!apiKey) { showApiModal(true); return; }
+
+  const name = document.getElementById('candidateName').value.trim();
+  const cv = document.getElementById('cvText').value.trim();
+  const jobTitle = document.getElementById('jobTitle').value.trim();
+  const jobDesc = document.getElementById('jobDesc').value.trim();
+  const criteria = document.getElementById('priorityCriteria').value.trim();
+  const lang = document.getElementById('analysisLang').value;
+  const minScore = parseInt(document.getElementById('minScore').value) || 60;
+
+  if (!name) { alert('Introduceți numele candidatului.'); return; }
+  if (!cv) { alert('Lipiți conținutul CV-ului.'); return; }
+  if (!jobDesc) { alert('Completați descrierea postului înainte de analiză.'); return; }
+
+  setLoading(true, 'Se analizează CV-ul cu AI...');
+
+  const systemPrompt = `Ești un expert HR senior specializat în trierea și analiza CV-urilor. Analizezi CV-uri cu obiectivitate profesională, detectezi atât punctele forte cât și riscurile, și oferi recomandări clare și structurate. Răspunzi EXCLUSIV în format JSON valid, fără text în afara JSON-ului.`;
+
+  const userPrompt = `Analizează CV-ul candidatului pentru postul indicat. Răspunde în ${lang}.
+
+POST: ${jobTitle || 'Nespecificat'}
+DESCRIERE POST: ${jobDesc}
+CRITERII PRIORITARE: ${criteria || 'Nespecificate'}
+PRAG MINIM POTRIVIRE: ${minScore}%
+
+CV CANDIDAT (${name}):
+${cv}
+
+Returnează EXCLUSIV un obiect JSON cu această structură exactă:
+{
+  "score": <număr 0-100 reprezentând potrivirea cu postul>,
+  "decizie": "<Recomandat / Posibil / Respins>",
+  "rezumat": "<2-3 propoziții despre profilul candidatului>",
+  "puncte_forte": "<descriere puncte forte relevante pentru post, 2-3 propoziții>",
+  "puncte_slabe": "<descriere lipsuri sau riscuri, 2-3 propoziții>",
+  "criterii_scoruri": {
+    "experienta": <0-100>,
+    "studii": <0-100>,
+    "skills_tehnice": <0-100>,
+    "soft_skills": <0-100>,
+    "potrivire_cultura": <0-100>,
+    "stabilitate_cariera": <0-100>
+  },
+  "skills_identificate": [<listă de skills din CV, max 8, ca stringuri>],
+  "gaps_cariera": [<listă de lipsuri sau gaps observate, ca stringuri scurte, max 4>],
+  "riscuri": [<riscuri de angajare identificate, ca stringuri scurte, max 3>],
+  "intrebari_interviu": [<3 întrebări specifice pentru interviu, ca stringuri>],
+  "bias_flags": [<posibile elemente care ar putea introduce bias inconștient în evaluare, ex: "Pauza de carieră 2020-2021", ca stringuri, max 3, poate fi gol []>],
+  "traseu_cariera": "<o frază despre evoluția carierei, stabilitate, progres>",
+  "recomandat_pentru_interviu": <true / false>
+}`;
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1500,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: userPrompt }]
+      })
+    });
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      if (response.status === 401) {
+        updateApiStatus(false);
+        setLoading(false);
+        alert('Cheia API este invalidă. Mergeți la Configurare API și verificați cheia.');
+        showApiModal();
+        return;
+      }
+      throw new Error(err.error?.message || `HTTP ${response.status}`);
+    }
+
+    const data = await response.json();
+    const rawText = data.content?.map(b => b.text || '').join('');
+    const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error('Răspuns invalid de la AI');
+
+    const analysis = JSON.parse(jsonMatch[0]);
+
+    const candidate = {
+      id: Date.now(),
+      name,
+      cvText: cv,
+      jobTitle: jobTitle || 'Nespecificat',
+      addedAt: new Date().toISOString(),
+      analysis
+    };
+
+    candidates.push(candidate);
+    saveCandidates();
+    renderCandidates();
+    updateStats();
+    buildBiasView();
+    buildRanking();
+
+    // clear form
+    document.getElementById('candidateName').value = '';
+    document.getElementById('cvText').value = '';
+
+    setLoading(false);
+  } catch (err) {
+    setLoading(false);
+    console.error(err);
+    alert('Eroare la analiza AI: ' + err.message + '\n\nVerificați consola browserului pentru detalii.');
+  }
+}
+
+function setLoading(on, text = '') {
+  document.getElementById('analyzeBtn').disabled = on;
+  const row = document.getElementById('loadingRow');
+  if (on) {
+    row.classList.remove('hidden');
+    document.getElementById('loadingText').textContent = text;
+  } else {
+    row.classList.add('hidden');
+  }
+}
+
+// ─── RENDER CANDIDATES ────────────────────────────────────────────
+function renderCandidates() {
+  const grid = document.getElementById('candidatesGrid');
+  const empty = document.getElementById('emptyState');
+  const sort = document.getElementById('sortSelect').value;
+
+  let sorted = [...candidates];
+  if (sort === 'score') sorted.sort((a,b) => b.analysis.score - a.analysis.score);
+  if (sort === 'name') sorted.sort((a,b) => a.name.localeCompare(b.name));
+  if (sort === 'recent') sorted.sort((a,b) => b.id - a.id);
+
+  // clear all but emptyState
+  Array.from(grid.children).forEach(c => { if (c !== empty) c.remove(); });
+
+  if (!sorted.length) {
+    empty.classList.remove('hidden');
+    return;
+  }
+  empty.classList.add('hidden');
+
+  sorted.forEach(c => {
+    const card = buildCandidateCard(c);
+    grid.appendChild(card);
+  });
+}
+
+function buildCandidateCard(c) {
+  const a = c.analysis;
+  const score = a.score || 0;
+  const ringClass = score >= 75 ? 'high' : score >= 50 ? 'mid' : 'low';
+  const decBadge = a.decizie === 'Recomandat' ? 'badge-success' : a.decizie === 'Respins' ? 'badge-danger' : 'badge-warn';
+  const isSelected = selectedIds.has(c.id);
+
+  const div = document.createElement('div');
+  div.className = 'candidate-card' + (isSelected ? ' selected' : '');
+  div.dataset.id = c.id;
+
+  const criteriaHtml = Object.entries(a.criterii_scoruri || {}).map(([k, v]) => {
+    const colors = { experienta: '#2E4A3E', studii: '#4A7A68', skills_tehnice: '#1A5C3A', soft_skills: '#7A5C1A', potrivire_cultura: '#5C2A7A', stabilitate_cariera: '#1A3A5C' };
+    const labels = { experienta: 'Experiență', studii: 'Studii', skills_tehnice: 'Skills tehnice', soft_skills: 'Soft skills', potrivire_cultura: 'Potrivire cultură', stabilitate_cariera: 'Stabilitate' };
+    const color = score >= 75 ? '#1A5C3A' : score >= 50 ? '#7A5C1A' : '#8B1A1A';
+    const barColor = v >= 70 ? '#5EE899' : v >= 45 ? '#F5C842' : '#FF7B7B';
+    return `<div class="criterion-item">
+      <span class="criterion-name">${labels[k] || k}</span>
+      <div class="criterion-bar-wrap"><div class="criterion-bar" style="width:${v}%;background:${barColor};"></div></div>
+      <span class="criterion-val">${v}%</span>
+    </div>`;
+  }).join('');
+
+  const skillsHtml = (a.skills_identificate || []).map(s => `<span class="tag">${s}</span>`).join('');
+  const gapsHtml = (a.gaps_cariera || []).map(g => `<span class="tag gap">${g}</span>`).join('');
+  const risksHtml = (a.riscuri || []).map(r => `<span class="tag risk">${r}</span>`).join('');
+
+  const interviewHtml = (a.intrebari_interviu || []).map((q, i) =>
+    `<div style="font-size:13px;color:var(--text2);margin-bottom:6px;"><strong style="color:var(--text3);font-size:11px;">Q${i+1}</strong> ${q}</div>`
+  ).join('');
+
+  div.innerHTML = `
+    <div class="card-header-row">
+      <div style="display:flex;align-items:flex-start;gap:10px;flex:1;">
+        <input type="checkbox" ${isSelected ? 'checked' : ''} onchange="toggleSelect(${c.id}, this)" style="margin-top:4px;width:16px;height:16px;cursor:pointer;accent-color:var(--accent);">
+        <div class="candidate-meta">
+          <div class="candidate-name">${c.name}</div>
+          <div class="candidate-role">${c.jobTitle} &mdash; <span style="font-size:12px;color:var(--text3);">${new Date(c.addedAt).toLocaleDateString('ro-RO')}</span></div>
+          <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+            <span class="badge ${decBadge}">${a.decizie}</span>
+            ${a.recomandat_pentru_interviu ? '<span class="badge badge-success">✓ Interviu recomandat</span>' : '<span class="badge badge-neutral">✗ Fără interviu</span>'}
+          </div>
+        </div>
+      </div>
+      <div class="score-ring ${ringClass}">
+        <span class="score-num">${score}</span>
+        <span class="score-label">/ 100</span>
+      </div>
+    </div>
+
+    <div class="analysis-body">
+      <div class="analysis-section">
+        <div class="analysis-label">Rezumat profil</div>
+        <div class="analysis-text">${a.rezumat || ''}</div>
+      </div>
+
+      <div class="analysis-section">
+        <div class="analysis-label">Criterii detaliate</div>
+        <div class="criteria-grid">${criteriaHtml}</div>
+      </div>
+
+      ${skillsHtml ? `<div class="analysis-section">
+        <div class="analysis-label">Skills identificate</div>
+        <div class="tags-row">${skillsHtml}</div>
+      </div>` : ''}
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+        <div class="analysis-section" style="margin:0;">
+          <div class="analysis-label">✅ Puncte forte</div>
+          <div class="analysis-text" style="font-size:13px;">${a.puncte_forte || ''}</div>
+        </div>
+        <div class="analysis-section" style="margin:0;">
+          <div class="analysis-label">⚠ Puncte slabe</div>
+          <div class="analysis-text" style="font-size:13px;">${a.puncte_slabe || ''}</div>
+        </div>
+      </div>
+
+      ${(a.gaps_cariera||[]).length || (a.riscuri||[]).length ? `<div class="analysis-section">
+        <div class="analysis-label">Gaps & Riscuri</div>
+        <div class="tags-row">${gapsHtml}${risksHtml}</div>
+      </div>` : ''}
+
+      ${a.traseu_cariera ? `<div class="analysis-section">
+        <div class="analysis-label">Traseu carieră</div>
+        <div class="analysis-text" style="font-size:13px;">${a.traseu_cariera}</div>
+      </div>` : ''}
+
+      ${interviewHtml ? `<div class="analysis-section" style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;">
+        <div class="analysis-label" style="margin-bottom:8px;">🎤 Întrebări recomandate pentru interviu</div>
+        ${interviewHtml}
+      </div>` : ''}
+
+      ${(a.bias_flags||[]).length ? `<div class="bias-alert" style="margin-top:0.75rem;margin-bottom:0;">
+        <div class="bias-alert-title">⚖ Atenție posibil bias inconștient</div>
+        <div class="bias-alert-text">${a.bias_flags.join(' · ')}</div>
+      </div>` : ''}
+    </div>
+
+    <div class="card-actions">
+      <button class="btn btn-secondary btn-sm" onclick="toggleSelect(${c.id}, null, true)">
+        ${isSelected ? '✓ Selectat pentru comparație' : '+ Adaugă la comparație'}
+      </button>
+      <button class="btn btn-danger" onclick="deleteCandidate(${c.id})">🗑 Șterge</button>
+    </div>
+  `;
+  return div;
+}
+
+// ─── SELECT / DESELECT ────────────────────────────────────────────
+function toggleSelect(id, chk, fromBtn) {
+  if (selectedIds.has(id)) {
+    selectedIds.delete(id);
+  } else {
+    selectedIds.add(id);
+  }
+  renderCandidates();
+}
+
+// ─── DELETE ───────────────────────────────────────────────────────
+function deleteCandidate(id) {
+  if (!confirm('Ștergeți acest candidat?')) return;
+  candidates = candidates.filter(c => c.id !== id);
+  selectedIds.delete(id);
+  saveCandidates();
+  renderCandidates();
+  updateStats();
+  buildBiasView();
+  buildRanking();
+}
+
+function clearAll() {
+  if (!candidates.length) return;
+  if (!confirm(`Ștergeți toți cei ${candidates.length} candidați analizați?`)) return;
+  candidates = [];
+  selectedIds.clear();
+  saveCandidates();
+  renderCandidates();
+  updateStats();
+  buildBiasView();
+  buildRanking();
+}
+
+// ─── STATS ────────────────────────────────────────────────────────
+function updateStats() {
+  document.getElementById('statTotal').textContent = candidates.length;
+  document.getElementById('statHigh').textContent = candidates.filter(c => c.analysis.score >= 75).length;
+  document.getElementById('statMid').textContent = candidates.filter(c => c.analysis.score >= 50 && c.analysis.score < 75).length;
+  document.getElementById('statLow').textContent = candidates.filter(c => c.analysis.score < 50).length;
+}
+
+// ─── VIEWS ────────────────────────────────────────────────────────
+function switchView(view, btn) {
+  currentView = view;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('viewList').classList.toggle('hidden', view !== 'list');
+  document.getElementById('viewCompare').classList.toggle('hidden', view !== 'compare');
+  document.getElementById('viewBias').classList.toggle('hidden', view !== 'bias');
+  document.getElementById('viewRanking').classList.toggle('hidden', view !== 'ranking');
+
+  if (view === 'compare') buildCompare();
+  if (view === 'bias') buildBiasView();
+  if (view === 'ranking') buildRanking();
+}
+
+// ─── COMPARE ──────────────────────────────────────────────────────
+function buildCompare() {
+  const container = document.getElementById('compareContent');
+  const toCompare = candidates.filter(c => selectedIds.has(c.id));
+  if (toCompare.length < 2) {
+    container.innerHTML = `<div class="empty-state">
+      <div class="empty-icon">↔</div>
+      <div class="empty-title">Selectați minim 2 candidați</div>
+      <div class="empty-desc">Bifați candidații din lista principală (checkbox) și reveniți aici.</div>
+    </div>`;
+    return;
+  }
+
+  const rows = [
+    { label: 'Scor global', fn: c => `<strong>${c.analysis.score}/100</strong>` },
+    { label: 'Decizie', fn: c => c.analysis.decizie },
+    { label: 'Interviu', fn: c => c.analysis.recomandat_pentru_interviu ? '✅ Da' : '✗ Nu' },
+    { label: 'Experiență', fn: c => `${c.analysis.criterii_scoruri?.experienta || 0}%` },
+    { label: 'Studii', fn: c => `${c.analysis.criterii_scoruri?.studii || 0}%` },
+    { label: 'Skills tehnice', fn: c => `${c.analysis.criterii_scoruri?.skills_tehnice || 0}%` },
+    { label: 'Soft skills', fn: c => `${c.analysis.criterii_scoruri?.soft_skills || 0}%` },
+    { label: 'Potrivire cultură', fn: c => `${c.analysis.criterii_scoruri?.potrivire_cultura || 0}%` },
+    { label: 'Stabilitate', fn: c => `${c.analysis.criterii_scoruri?.stabilitate_cariera || 0}%` },
+    { label: 'Traseu carieră', fn: c => c.analysis.traseu_cariera || '-' },
+    { label: 'Skills', fn: c => (c.analysis.skills_identificate || []).join(', ') || '-' },
+    { label: 'Gaps / Riscuri', fn: c => [...(c.analysis.gaps_cariera||[]), ...(c.analysis.riscuri||[])].join(', ') || '—' },
+  ];
+
+  const thCols = toCompare.map(c => `<th>${c.name}</th>`).join('');
+  const trRows = rows.map(r =>
+    `<tr><td class="row-label">${r.label}</td>${toCompare.map(c => `<td>${r.fn(c)}</td>`).join('')}</tr>`
+  ).join('');
+
+  container.innerHTML = `<div style="overflow-x:auto;">
+    <table class="compare-table">
+      <thead><tr><th style="width:140px;">Criteriu</th>${thCols}</tr></thead>
+      <tbody>${trRows}</tbody>
+    </table>
+  </div>`;
+}
+
+// ─── BIAS VIEW ────────────────────────────────────────────────────
+function buildBiasView() {
+  if (currentView !== 'bias') return;
+  const container = document.getElementById('biasContent');
+  if (candidates.length < 2) {
+    container.innerHTML = `<div class="empty-state">
+      <div class="empty-icon">⚖</div>
+      <div class="empty-title">Adăugați minim 2 candidați</div>
+      <div class="empty-desc">Analiza de bias necesită compararea mai multor profiluri.</div>
+    </div>`;
+    return;
+  }
+
+  const allFlags = candidates.flatMap(c =>
+    (c.analysis.bias_flags || []).map(f => ({ name: c.name, flag: f }))
+  );
+
+  const flagsHtml = allFlags.length ? allFlags.map(f =>
+    `<div class="bias-alert" style="margin-bottom:0.75rem;">
+      <div class="bias-alert-title">⚖ ${f.name}</div>
+      <div class="bias-alert-text">${f.flag}</div>
+    </div>`
+  ).join('') : `<div class="notice" style="margin-bottom:1rem;">✓ Nu au fost detectate flag-uri de bias în candidaturile analizate.</div>`;
+
+  // consistency check — variance in scores
+  const scores = candidates.map(c => c.analysis.score);
+  const avg = scores.reduce((a,b) => a+b,0) / scores.length;
+  const variance = scores.reduce((a,b) => a + Math.pow(b-avg,2), 0) / scores.length;
+  const stdDev = Math.sqrt(variance).toFixed(1);
+
+  const careerHtml = candidates.map(c =>
+    `<div style="margin-bottom:0.75rem;padding-bottom:0.75rem;border-bottom:1px solid var(--border);">
+      <div style="font-weight:500;font-size:14px;margin-bottom:2px;">${c.name}</div>
+      <div style="font-size:13px;color:var(--text2);">${c.analysis.traseu_cariera || '—'}</div>
+    </div>`
+  ).join('');
+
+  container.innerHTML = `
+    <div style="margin-bottom:1.5rem;">
+      <div class="analysis-label" style="margin-bottom:0.75rem;">Factori potențiali de bias identificați de AI</div>
+      ${flagsHtml}
+    </div>
+
+    <div style="margin-bottom:1.5rem;">
+      <div class="analysis-label" style="margin-bottom:0.75rem;">Consistența evaluărilor</div>
+      <div class="notice" style="margin-bottom:0.75rem;">
+        <span>📊</span>
+        <span>Deviație standard scoruri: <strong>${stdDev}</strong> puncte — ${parseFloat(stdDev) < 15 ? 'Evaluare relativ consistentă' : 'Variabilitate ridicată — verificați criteriile'}</span>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        ${candidates.map(c => `<div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:13px;">
+          <span style="color:var(--text3);">${c.name}</span>
+          <strong style="margin-left:8px;color:${c.analysis.score>=75?'var(--success)':c.analysis.score>=50?'var(--score-mid)':'var(--danger)'};">${c.analysis.score}%</strong>
+        </div>`).join('')}
+      </div>
+    </div>
+
+    <div>
+      <div class="analysis-label" style="margin-bottom:0.75rem;">Traseu carieră comparativ</div>
+      ${careerHtml}
+    </div>
+
+    <div style="background:var(--warn-light);border:1px solid #E8C8A0;border-radius:var(--radius);padding:1rem 1.25rem;margin-top:1rem;">
+      <div class="bias-alert-title">Recomandări pentru un proces echitabil</div>
+      <div class="bias-alert-text" style="margin-top:6px;">
+        • Evaluați candidații pe baza criteriilor postului, ignorând informații demografice<br>
+        • Gap-urile de carieră pot reflecta concedii medicale, maternitate, voluntariat — nu le penalizați automat<br>
+        • Diversificați sursa de recrutare pentru a evita bias-ul de confirmare<br>
+        • Documentați motivele de acceptare/respingere pentru fiecare candidat
+      </div>
+    </div>
+  `;
+}
+
+// ─── RANKING ──────────────────────────────────────────────────────
+function buildRanking() {
+  if (currentView !== 'ranking') return;
+  const container = document.getElementById('rankingContent');
+  if (!candidates.length) {
+    container.innerHTML = `<div class="empty-state"><div class="empty-icon">🏆</div><div class="empty-title">Niciun candidat analizat</div></div>`;
+    return;
+  }
+
+  const sorted = [...candidates].sort((a,b) => b.analysis.score - a.analysis.score);
+  const minScore = parseInt(document.getElementById('minScore').value) || 60;
+
+  const medals = ['🥇','🥈','🥉'];
+
+  const rows = sorted.map((c, i) => {
+    const a = c.analysis;
+    const scoreColor = a.score >= 75 ? 'var(--success)' : a.score >= 50 ? 'var(--score-mid)' : 'var(--danger)';
+    const passMinScore = a.score >= minScore;
+    return `<div style="display:flex;align-items:center;gap:1rem;padding:1rem;border-bottom:1px solid var(--border);${i===0?'background:var(--accent-light);border-radius:var(--radius);':''}">
+      <div style="font-size:1.5rem;width:36px;text-align:center;">${medals[i] || (i+1)}</div>
+      <div style="flex:1;">
+        <div style="font-weight:500;font-size:15px;margin-bottom:2px;">${c.name}</div>
+        <div style="font-size:12px;color:var(--text3);">${c.jobTitle}</div>
+      </div>
+      <div style="text-align:center;min-width:60px;">
+        <div style="font-size:1.3rem;font-weight:600;color:${scoreColor};">${a.score}</div>
+        <div style="font-size:11px;color:var(--text3);">/ 100</div>
+      </div>
+      <div>
+        <span class="badge ${a.decizie==='Recomandat'?'badge-success':a.decizie==='Respins'?'badge-danger':'badge-warn'}">${a.decizie}</span>
+      </div>
+      <div style="min-width:80px;text-align:right;">
+        ${passMinScore ? '<span class="badge badge-success">✓ Prag atins</span>' : '<span class="badge badge-danger">✗ Sub prag</span>'}
+      </div>
+    </div>`;
+  }).join('');
+
+  const recommend = sorted.filter(c => c.analysis.recomandat_pentru_interviu);
+  const rejectList = sorted.filter(c => !c.analysis.recomandat_pentru_interviu);
+
+  container.innerHTML = `
+    <div style="margin-bottom:1.5rem;">
+      <div class="notice" style="margin-bottom:1rem;">
+        <span>📌</span>
+        <span>Prag minim setat: <strong>${minScore}%</strong> — ${recommend.length} candidați recomandați pentru interviu din ${candidates.length} analizați</span>
+      </div>
+      ${rows}
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+      <div style="background:var(--success-light);border:1px solid #C0E0CC;border-radius:var(--radius);padding:1rem;">
+        <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:var(--success);margin-bottom:8px;">✓ Recomandați pentru interviu</div>
+        ${recommend.length ? recommend.map(c => `<div style="font-size:13px;padding:3px 0;">${c.name} — <strong>${c.analysis.score}%</strong></div>`).join('') : '<div style="font-size:13px;color:var(--text3);">Niciunul momentan</div>'}
+      </div>
+      <div style="background:var(--danger-light);border:1px solid #E8C0C0;border-radius:var(--radius);padding:1rem;">
+        <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:var(--danger);margin-bottom:8px;">✗ Respinși / Posibil</div>
+        ${rejectList.length ? rejectList.map(c => `<div style="font-size:13px;padding:3px 0;">${c.name} — <strong>${c.analysis.score}%</strong></div>`).join('') : '<div style="font-size:13px;color:var(--text3);">Niciunul momentan</div>'}
+      </div>
+    </div>
+  `;
+}
+
+// ─── EXPORT CSV ───────────────────────────────────────────────────
+function exportCSV() {
+  if (!candidates.length) { alert('Niciun candidat de exportat.'); return; }
+
+  const headers = ['Nume','Post','Data','Scor (%)','Decizie','Interviu','Experienta','Studii','Skills tehnice','Soft skills','Potrivire cultura','Stabilitate','Skills','Gaps','Riscuri'];
+  const rows = candidates.map(c => {
+    const a = c.analysis;
+    const cs = a.criterii_scoruri || {};
+    return [
+      c.name,
+      c.jobTitle,
+      new Date(c.addedAt).toLocaleDateString('ro-RO'),
+      a.score,
+      a.decizie,
+      a.recomandat_pentru_interviu ? 'Da' : 'Nu',
+      cs.experienta || '',
+      cs.studii || '',
+      cs.skills_tehnice || '',
+      cs.soft_skills || '',
+      cs.potrivire_cultura || '',
+      cs.stabilitate_cariera || '',
+      (a.skills_identificate || []).join('; '),
+      (a.gaps_cariera || []).join('; '),
+      (a.riscuri || []).join('; ')
+    ].map(v => `"${String(v).replace(/"/g,'""')}"`).join(',');
+  });
+
+  const csv = '\uFEFF' + [headers.join(','), ...rows].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `cv-screener-${new Date().toISOString().slice(0,10)}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// ─── PERSIST ──────────────────────────────────────────────────────
+function saveCandidates() {
+  localStorage.setItem('cvscreener_candidates', JSON.stringify(candidates));
+}
+</script>
+</body>
+</html>
